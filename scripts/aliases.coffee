@@ -1,9 +1,20 @@
+# Description:
+#   Convenient aliases
+#
+# Commands:
+#   hubot build <build> - Triggers the jenkins build named <build>
+#   hubot deploy <build> - Triggers the jenkins build named <build>-production
+
 hubot = require 'hubot'
 
 module.exports = (robot) ->
-  robot.respond /build (.*)$/, (msg) ->
-    build = new hubot.TextMessage(
+  trigger = (msg, build) ->
+    message = new hubot.TextMessage(
       msg.message.user,
-      "!jenkins build #{msg.match[1]}"
+      "#{robot.name} jenkins build #{build}"
     )
-    robot.receive build
+    robot.receive message
+  robot.respond /build (.*)$/, (msg) ->
+    trigger msg, msg.match[1]
+  robot.respond /deploy (.*)$/, (msg) ->
+    trigger msg, "#{msg.match[1]}-production"
