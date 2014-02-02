@@ -16,33 +16,13 @@
 
 QS = require 'querystring'
 
-mirrorImage = (msg, url) ->
-  params = QS.stringify
-    "key": "65aea9a07b4f6110c90248ffa247d41a"
-    "image": url
-  msg.http("http://api.imgur.com/2/upload.json")
-    .headers
-      "Content-type": "application/x-www-form-urlencoded"
-    .post(params) (err, res, body) ->
-      json = JSON.parse(body)
-      url = json.upload.links.original
-      msg.send url
-
 generateImage = (msg, values) ->
-  params = {}
-  for i in [0..7]
-    params["line#{i+1}"] = values[i] || "BEARS"
+  params = {'text[]': values}
   params = QS.stringify(params)
-  url = "http://www.shipbrook.net/onnotice/"
-  msg.http(url)
-    .headers
-      "Content-type": "application/x-www-form-urlencoded"
-    .post(params) (err, res, body) ->
-      img = body.match(/src="([^"]+)"/)[1]
-      mirrorImage msg, "#{url}#{img}"
-
-getOnNoticeImage = (values) ->
-  generateImage(values)
+  msg.send(params)
+  msg.http("http://colbert.herokuapp.com/generate").post(params) (err,res,body) ->
+    location = res.headers.location
+    msg.send(location)
 
 module.exports = (robot) ->
   putOnNotice = (msg) ->
@@ -50,12 +30,12 @@ module.exports = (robot) ->
     msg.send("ok, #{target} is on notice")
     list = robot.brain.data.onNotice || []
     list.push(target)
-    list = list.slice(-8)
+    list = list.slice(-10)
     robot.brain.data.onNotice = list
 
   robot.hear /putting (.+) on notice/i, (msg) ->
     putOnNotice(msg)
 
-  robot.respond /who is on notice/i, (msg) ->
+  robot.respond /on notice/i, (msg) ->
     generateImage(msg, robot.brain.data.onNotice)
 
