@@ -19,7 +19,6 @@ QS = require 'querystring'
 generateImage = (msg, values) ->
   params = {'text[]': values}
   params = QS.stringify(params)
-  msg.send(params)
   msg.http("http://colbert.herokuapp.com/generate").post(params) (err,res,body) ->
     location = res.headers.location
     msg.send(location)
