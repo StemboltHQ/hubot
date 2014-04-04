@@ -38,3 +38,6 @@ module.exports = (robot) ->
   robot.respond /on notice/i, (msg) ->
     generateImage(msg, robot.brain.data.onNotice)
 
+  robot.hear /BOXER PLZ TELL ME WHAT IS ON NOTICE/i, (msg) ->
+    generateImage(msg, robot.brain.data.onNotice)
+
