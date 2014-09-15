@@ -39,6 +39,6 @@ imageMe = (msg, query, animated, faces, cb) ->
       images = JSON.parse(body)
       images = images.responseData?.results
       if images?.length > 0
-        image  = msg.random images
+        image  = images[0]
         cb "#{image.unescapedUrl}#.png"
 
