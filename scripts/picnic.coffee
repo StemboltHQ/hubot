@@ -12,7 +12,7 @@ module.exports = (robot) ->
     msg.http(url).get() (err, res, body) ->
       data = JSON.parse(body)
       post = data.response.posts[0]
-      msg.send(post.title)
+      response = post.title + "\n"
 
       text = post.body
       text = text.replace(/<\/?p>/g, "")
@@ -22,5 +22,7 @@ module.exports = (robot) ->
         continue if !item
         [title, info] = item.split('</strong>')
         info = info.replace(/<br\/?>/g, '')
-        msg.send("#{title} - #{info}")
+        response += "*#{title}* - #{info}" + "\n"
+
+      msg.send(response)
 
