@@ -16,6 +16,7 @@ module.exports = (robot) ->
 
       text = post.body
       text = text.replace(/<\/?p>/g, "")
+      text = text.replace(/&amp;/g, "&")
 
       items = text.split(/<strong>/)
       for item in items
