@@ -29,7 +29,7 @@
     "hubot-karma-classic": "^1.0.1",
     "hubot-pager-me": "^2.0.2",
     "hubot-scripts": ">= 2.5.16",
-    "hubot-slack": "~3.2.1",
+    "hubot-slack": "slackhq/hubot-slack",
     "moment": "2.8.4",
     "xml2js": "0.4.4"
   },
