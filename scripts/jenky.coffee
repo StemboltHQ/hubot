@@ -20,15 +20,20 @@ class Jenky
     @build_responses = {}
     @build_count = 0
 
-  displayBuilds: (msg) ->
+  status: (msg) ->
+    @msg = msg
+    for build in BUILDS
+      @fetchBuild(build)
+
+  displayBuilds: ->
     for build in BUILDS
       continue if !@build_responses[build]
       @response += @build_responses[build]
-    msg.send(@response)
+    @msg.send(@response)
 
-  fetchBuild: (msg, build) =>
+  fetchBuild: (build) =>
     path = "#{URL}/job/#{@prefix}-#{build}/lastBuild/api/json"
-    req = msg.http(path)
+    req = @msg.http(path)
     if auth = authString()
       req.headers Authorization: "Basic #{auth}"
 
@@ -45,7 +50,7 @@ class Jenky
         @build_responses[build] = null
       finally
         @build_count += 1
-        @displayBuilds(msg) if @build_count == BUILDS.length
+        @displayBuilds() if @build_count == BUILDS.length
 
   # Find SHA1 in API because it is terrible.
   buildSha: (actions) ->
@@ -59,10 +64,8 @@ module.exports = (robot) ->
 
   robot.respond /jenky status$/i, (msg) ->
     jenky = new Jenky "printbear-sm", "Sticker Mule"
-    for build in BUILDS
-      jenky.fetchBuild(msg, build)
+    jenky.status(msg)
 
   robot.respond /jenky status (.*)$/i, (msg) ->
     jenky = new Jenky msg.match[1].trim().toLowerCase()
-    for build in BUILDS
-      jenky.fetchBuild(msg, build)
+    jenky.status(msg)
