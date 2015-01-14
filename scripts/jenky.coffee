@@ -38,7 +38,7 @@ class Jenky
       req.headers Authorization: "Basic #{auth}"
 
     req.get() (err, res, body) =>
-      try
+      if res.statusCode is 200
         content = JSON.parse(body)
 
         sha = @buildSha(content.actions)
@@ -46,11 +46,11 @@ class Jenky
         date = Moment(content.timestamp).format('MMMM Do YYYY [at] h:mma')
 
         @build_responses[build] = "> :#{status}: `#{sha}` *#{build}* on #{date}\n"
-      catch error
+      else
         @build_responses[build] = null
-      finally
-        @build_count += 1
-        @displayBuilds() if @build_count == BUILDS.length
+
+      @build_count += 1
+      @displayBuilds() if @build_count == BUILDS.length
 
   # Find SHA1 in API because it is terrible.
   buildSha: (actions) ->
