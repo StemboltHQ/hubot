@@ -22,6 +22,7 @@ class Jenky
 
   displayBuilds: (msg) ->
     for build in BUILDS
+      continue if !@build_responses[build]
       @response += @build_responses[build]
     msg.send(@response)
 
@@ -32,16 +33,20 @@ class Jenky
       req.headers Authorization: "Basic #{auth}"
 
     req.get() (err, res, body) =>
-      content = JSON.parse(body)
+      try
+        content = JSON.parse(body)
 
-      build = content.fullDisplayName.match(///#{@prefix}-([a-z]*)///)[1]
-      sha = content.fullDisplayName.match(/#([0-9a-z]*)/)[1]
-      status = if content.building then "building" else content.result.toLowerCase()
-      date = Moment(content.timestamp).format('MMMM Do YYYY [at] h:mma')
+        build = content.fullDisplayName.match(///#{@prefix}-([a-z]*)///)[1]
+        sha = content.fullDisplayName.match(/#([0-9a-z]*)/)[1]
+        status = if content.building then "building" else content.result.toLowerCase()
+        date = Moment(content.timestamp).format('MMMM Do YYYY [at] h:mma')
 
-      @build_responses[build] = "> :#{status}: `#{sha}` *#{build}* on #{date}\n"
-      @build_count += 1
-      @displayBuilds(msg) if @build_count == BUILDS.length
+        @build_responses[build] = "> :#{status}: `#{sha}` *#{build}* on #{date}\n"
+      catch error
+        @build_responses[build] = null
+      finally
+        @build_count += 1
+        @displayBuilds(msg) if @build_count == BUILDS.length
 
 module.exports = (robot) ->
   unless process.env.HUBOT_JENKINS_URL?
