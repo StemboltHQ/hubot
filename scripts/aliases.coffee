@@ -16,5 +16,9 @@ module.exports = (robot) ->
     robot.receive message
   robot.respond /build (.*)$/, (msg) ->
     trigger msg, msg.match[1]
+  robot.respond /package (.*)$/, (msg) ->
+    trigger msg, "#{msg.match[1]}-package"
+  robot.respond /stage (.*)$/, (msg) ->
+    trigger msg, "#{msg.match[1]}-staging"
   robot.respond /deploy (.*)$/, (msg) ->
     trigger msg, "#{msg.match[1]}-production"
