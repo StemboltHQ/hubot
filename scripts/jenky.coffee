@@ -32,10 +32,10 @@ class Jenky
 
       build = content.fullDisplayName.match(///#{@prefix}-([a-z]*)///)[1]
       sha = content.fullDisplayName.match(/#([0-9a-z]*)/)[1]
-      status = if content.building then "BUILDING" else content.result
+      status = if content.building then "building" else content.result.toLowerCase()
       date = Moment(content.timestamp).format('MMMM Do YYYY [at] h:mma')
 
-      @build_responses[build] = "> *#{build}* `#{sha}` #{status} on #{date}\n"
+      @build_responses[build] = "> *#{build}* `#{sha}` :#{status}: on #{date}\n"
       @build_count += 1
       @displayBuilds(msg) if @build_count == BUILDS.length
 
