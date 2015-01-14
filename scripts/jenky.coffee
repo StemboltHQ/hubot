@@ -36,8 +36,7 @@ class Jenky
       try
         content = JSON.parse(body)
 
-        build = content.fullDisplayName.match(///#{@prefix}-([a-z]*)///)[1]
-        sha = content.fullDisplayName.match(/#([0-9a-z]*)/)[1]
+        sha = @buildSha(content.actions)
         status = if content.building then "building" else content.result.toLowerCase()
         date = Moment(content.timestamp).format('MMMM Do YYYY [at] h:mma')
 
@@ -47,6 +46,11 @@ class Jenky
       finally
         @build_count += 1
         @displayBuilds(msg) if @build_count == BUILDS.length
+
+  # Find SHA1 in API because it is terrible.
+  buildSha: (actions) ->
+    last_build = (a.lastBuiltRevision for a in actions when a.lastBuiltRevision?)[0]
+    last_build["SHA1"][0..6]
 
 module.exports = (robot) ->
   unless process.env.HUBOT_JENKINS_URL?
