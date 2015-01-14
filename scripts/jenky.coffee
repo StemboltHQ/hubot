@@ -7,8 +7,11 @@
 Moment = require('moment')
 
 URL = process.env.HUBOT_JENKINS_URL
-AUTH = new Buffer(process.env.HUBOT_JENKINS_AUTH).toString('base64')
 BUILDS = ["master", "package", "staging", "production"]
+
+authString = ->
+  if process.env.HUBOT_JENKINS_AUTH
+    new Buffer(process.env.HUBOT_JENKINS_AUTH).toString('base64')
 
 class Jenky
   constructor: (@prefix, @name = null) ->
@@ -25,7 +28,8 @@ class Jenky
   fetchBuild: (msg, build) =>
     path = "#{URL}/job/#{@prefix}-#{build}/lastBuild/api/json"
     req = msg.http(path)
-    req.headers Authorization: "Basic #{AUTH}"
+    if auth = authString()
+      req.headers Authorization: "Basic #{auth}"
 
     req.get() (err, res, body) =>
       content = JSON.parse(body)
@@ -40,6 +44,10 @@ class Jenky
       @displayBuilds(msg) if @build_count == BUILDS.length
 
 module.exports = (robot) ->
+  unless process.env.HUBOT_JENKINS_URL?
+    robot.logger.warning 'The HUBOT_JENKINS_URL environment variable is not set'
+    return
+
   robot.respond /jenky status$/i, (msg) ->
     jenky = new Jenky "printbear-sm", "Sticker Mule"
     for build in BUILDS
