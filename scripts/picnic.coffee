@@ -23,7 +23,7 @@ module.exports = (robot) ->
         continue if !item
         [title, info] = item.split('</strong>')
         continue if !info
-        info = info.replace(/<br\/?>/g, '')
+        info = info.replace(/<br\/?>/g, '').trim()
         response += "*#{title}* - #{info}" + "\n"
 
       msg.send(response)
