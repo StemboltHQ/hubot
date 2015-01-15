@@ -3,6 +3,7 @@
 #
 # Commands:
 #   hubot jenky status <option> - show build pipeline status
+#   hubot jenky config <prefix> <name> - add default prefix and possibly a name for a channel
 
 Moment = require('moment')
 
@@ -62,10 +63,35 @@ module.exports = (robot) ->
     robot.logger.warning 'The HUBOT_JENKINS_URL environment variable is not set'
     return
 
+  getBrain = ->
+    robot.brain.get('jenky') || {}
+
   robot.respond /jenky status$/i, (msg) ->
-    jenky = new Jenky "printbear-sm", "Sticker Mule"
-    jenky.status(msg)
+    config = getBrain()[msg.message.room]
+
+    if not config
+      msg.send("No default Jenky prefix found for channel")
+    else
+      jenky = new Jenky config.prefix, config.name
+      jenky.status(msg)
 
   robot.respond /jenky status (.*)$/i, (msg) ->
     jenky = new Jenky msg.match[1].trim().toLowerCase()
     jenky.status(msg)
+
+  robot.respond /jenky config ([A-z\-]*)\s*(.*)$/i, (msg) ->
+    opts = getBrain()
+
+    room = msg.message.room
+    prefix = msg.match[1].trim().toLowerCase()
+    name = msg.match[2].trim()
+
+    opts[room] = {prefix: prefix, name: name}
+
+    robot.brain.set('jenky', opts)
+
+    response = "Using Jenky prefix: `#{prefix}` "
+    response += "and name: \"#{name}\" " if name
+    response += "for channel #{room}"
+
+    msg.send(response)
