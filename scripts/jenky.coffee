@@ -16,7 +16,7 @@ authString = ->
 
 class Jenky
   constructor: (@prefix, @name = null) ->
-    @name ?= @prefix
+    @name = if !!@name then @name else @prefix
     @response = "*#{@name} Pipeline Status*" + "\n"
     @build_responses = {}
     @build_count = 0
