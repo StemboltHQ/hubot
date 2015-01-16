@@ -2,14 +2,15 @@
 #   Lovely Jenkins integration for Hubot.
 #
 # Commands:
-#   hubot jenky status <option> - show build pipeline status
-#   hubot jenky trigger <build> - trigger build on Jenkins
 #   hubot jenky build - trigger configured master build on Jenkins
-#   hubot jenky package - trigger configured package build on Jenkins
-#   hubot jenky stage - trigger configured staging build on Jenkins
-#   hubot jenky deploy - trigger configured production build on Jenkins
 #   hubot jenky config - print the current channel config
 #   hubot jenky config <prefix> <name> - add default prefix and possibly a name for a channel
+#   hubot jenky deploy - trigger configured production build on Jenkins
+#   hubot jenky package - trigger configured package build on Jenkins
+#   hubot jenky stage - trigger configured staging build on Jenkins
+#   hubot jenky status - show build pipeline status based on config
+#   hubot jenky status <prefix> - show build pipeline status for the provided prefix
+#   hubot jenky trigger <build> - trigger build on Jenkins
 
 Moment = require('moment')
 Hubot = require 'hubot'
