@@ -66,12 +66,15 @@ module.exports = (robot) ->
   getBrain = ->
     robot.brain.get('jenky') || {}
 
-  robot.respond /jenky status$/i, (msg) ->
+  withJenkyConfig = (msg, callback) ->
     config = getBrain()[msg.message.room]
-
     if not config
       msg.send("No default Jenky prefix found for channel")
     else
+      callback(config)
+
+  robot.respond /jenky status$/i, (msg) ->
+    withJenkyConfig msg, (config) ->
       jenky = new Jenky config.prefix, config.name
       jenky.status(msg)
 
