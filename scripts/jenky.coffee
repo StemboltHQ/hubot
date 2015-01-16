@@ -8,6 +8,7 @@
 #   hubot jenky package - trigger configured package build on Jenkins
 #   hubot jenky stage - trigger configured staging build on Jenkins
 #   hubot jenky deploy - trigger configured production build on Jenkins
+#   hubot jenky config - print the current channel config
 #   hubot jenky config <prefix> <name> - add default prefix and possibly a name for a channel
 
 Moment = require('moment')
@@ -114,6 +115,12 @@ module.exports = (robot) ->
     withJenkyConfig msg, (config) ->
       triggerBuild msg, "#{config.prefix}-production"
 
+  robot.respond /jenky config$/i, (msg) ->
+    withJenkyConfig msg, (config) ->
+      response = "Jenky configured to use prefix: `#{config.prefix}` "
+      response += "and name: *#{config.name}*" if config.name
+      msg.send(response)
+
   robot.respond /jenky config ([A-z\-]*)\s*(.*)$/i, (msg) ->
     opts = getBrain()
 
@@ -126,7 +133,7 @@ module.exports = (robot) ->
     robot.brain.set('jenky', opts)
 
     response = "Using Jenky prefix: `#{prefix}` "
-    response += "and name: \"#{name}\" " if name
-    response += "for channel #{room}"
+    response += "and name: *#{name}* " if name
+    response += "for channel ##{room}"
 
     msg.send(response)
