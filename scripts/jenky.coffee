@@ -15,32 +15,28 @@
 Moment = require('moment')
 Hubot = require 'hubot'
 
-URL = process.env.HUBOT_JENKINS_URL
-BUILDS = ["master", "package", "staging", "production"]
-
-authString = ->
-  if process.env.HUBOT_JENKINS_AUTH
-    new Buffer(process.env.HUBOT_JENKINS_AUTH).toString('base64')
-
 class Jenky
+  BUILDS = ["master", "package", "staging", "production"]
+  URL = process.env.HUBOT_JENKINS_URL
+
   constructor: (@prefix, @name = null) ->
-    @name = if !!@name then @name else @prefix
-    @response = "*#{@name} Pipeline Status*" + "\n"
-    @build_responses = {}
-    @build_count = 0
+    @name ||= @prefix
 
   status: (msg) ->
     @msg = msg
+    @build_responses = {}
+    @build_count = 0
     for build in BUILDS
-      @fetchBuild(build)
+      fetchBuild.call(@, build)
 
-  displayBuilds: ->
+  displayBuilds = ->
+    response = "*#{@name} Pipeline Status*" + "\n"
     for build in BUILDS
       continue if !@build_responses[build]
-      @response += @build_responses[build]
-    @msg.send(@response)
+      response += @build_responses[build]
+    @msg.send(response)
 
-  fetchBuild: (build) =>
+  fetchBuild = (build) ->
     path = "#{URL}/job/#{@prefix}-#{build}/lastBuild/api/json"
     req = @msg.http(path)
     if auth = authString()
@@ -50,7 +46,7 @@ class Jenky
       if res.statusCode is 200
         content = JSON.parse(body)
 
-        sha = @buildSha(content.actions)
+        sha = buildSha(content.actions)
         status = if content.building then "building" else content.result.toLowerCase()
         date = Moment(content.timestamp).format('MMMM Do YYYY [at] h:mma')
 
@@ -59,12 +55,16 @@ class Jenky
         @build_responses[build] = null
 
       @build_count += 1
-      @displayBuilds() if @build_count == BUILDS.length
+      displayBuilds.call(@) if @build_count == BUILDS.length
 
   # Find SHA1 in API because it is terrible.
-  buildSha: (actions) ->
+  buildSha = (actions) ->
     last_build = (a.lastBuiltRevision for a in actions when a.lastBuiltRevision?)[0]
     last_build["SHA1"][0..6]
+
+  authString = ->
+    if process.env.HUBOT_JENKINS_AUTH
+      new Buffer(process.env.HUBOT_JENKINS_AUTH).toString('base64')
 
 module.exports = (robot) ->
   unless process.env.HUBOT_JENKINS_URL?
