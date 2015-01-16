@@ -4,6 +4,10 @@
 # Commands:
 #   hubot jenky status <option> - show build pipeline status
 #   hubot jenky trigger <build> - trigger build on Jenkins
+#   hubot jenky build - trigger configured master build on Jenkins
+#   hubot jenky package - trigger configured package build on Jenkins
+#   hubot jenky stage - trigger configured staging build on Jenkins
+#   hubot jenky deploy - trigger configured production build on Jenkins
 #   hubot jenky config <prefix> <name> - add default prefix and possibly a name for a channel
 
 Moment = require('moment')
@@ -93,6 +97,22 @@ module.exports = (robot) ->
 
   robot.respond /jenky trigger (.*)$/i, (msg) ->
     triggerBuild msg, msg.match[1]
+
+  robot.respond /jenky build$/i, (msg) ->
+    withJenkyConfig msg, (config) ->
+      triggerBuild msg, "#{config.prefix}-master"
+
+  robot.respond /jenky package$/i, (msg) ->
+    withJenkyConfig msg, (config) ->
+      triggerBuild msg, "#{config.prefix}-package"
+
+  robot.respond /jenky stage$/i, (msg) ->
+    withJenkyConfig msg, (config) ->
+      triggerBuild msg, "#{config.prefix}-staging"
+
+  robot.respond /jenky deploy$/i, (msg) ->
+    withJenkyConfig msg, (config) ->
+      triggerBuild msg, "#{config.prefix}-production"
 
   robot.respond /jenky config ([A-z\-]*)\s*(.*)$/i, (msg) ->
     opts = getBrain()
