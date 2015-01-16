@@ -3,9 +3,11 @@
 #
 # Commands:
 #   hubot jenky status <option> - show build pipeline status
+#   hubot jenky trigger <build> - trigger build on Jenkins
 #   hubot jenky config <prefix> <name> - add default prefix and possibly a name for a channel
 
 Moment = require('moment')
+Hubot = require 'hubot'
 
 URL = process.env.HUBOT_JENKINS_URL
 BUILDS = ["master", "package", "staging", "production"]
@@ -73,6 +75,13 @@ module.exports = (robot) ->
     else
       callback(config)
 
+  triggerBuild = (msg, build) ->
+    message = new Hubot.TextMessage(
+      msg.message.user,
+      "#{robot.name} jenkins build #{build}"
+    )
+    robot.receive message
+
   robot.respond /jenky status$/i, (msg) ->
     withJenkyConfig msg, (config) ->
       jenky = new Jenky config.prefix, config.name
@@ -81,6 +90,9 @@ module.exports = (robot) ->
   robot.respond /jenky status (.*)$/i, (msg) ->
     jenky = new Jenky msg.match[1].trim().toLowerCase()
     jenky.status(msg)
+
+  robot.respond /jenky trigger (.*)$/i, (msg) ->
+    triggerBuild msg, msg.match[1]
 
   robot.respond /jenky config ([A-z\-]*)\s*(.*)$/i, (msg) ->
     opts = getBrain()
