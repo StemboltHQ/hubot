@@ -13,7 +13,6 @@
 #   hubot jenky trigger <build> - trigger build on Jenkins
 
 Moment = require('moment')
-Hubot = require 'hubot'
 
 class Jenky
   BUILDS = ["master", "package", "staging", "production"]
@@ -22,12 +21,21 @@ class Jenky
   constructor: (@prefix, @name = null) ->
     @name ||= @prefix
 
-  status: (msg) ->
-    @msg = msg
+  status: (@msg) ->
     @build_responses = {}
     @build_count = 0
     for build in BUILDS
       fetchBuild.call(@, build)
+
+  trigger: (@msg, build = null) ->
+    path = triggerBuildPath.call(@, build)
+    req = jenkinsRequest.call(@, path)
+    req.post() (err, res, body) =>
+      build_message = if build_message then "*#{build_message}* " else ""
+      if res.statusCode is 201
+        @msg.reply "#{build_message}build started for #{@name}"
+      else
+        @msg.reply "Unable to start #{build_message}build for #{@name}"
 
   displayBuilds = ->
     response = "*#{@name} Pipeline Status*" + "\n"
@@ -37,11 +45,8 @@ class Jenky
     @msg.send(response)
 
   fetchBuild = (build) ->
-    path = "#{URL}/job/#{@prefix}-#{build}/lastBuild/api/json"
-    req = @msg.http(path)
-    if auth = authString()
-      req.headers Authorization: "Basic #{auth}"
-
+    path = buildInfoPath.call(@, build)
+    req = jenkinsRequest.call(@, path)
     req.get() (err, res, body) =>
       if res.statusCode is 200
         content = JSON.parse(body)
@@ -62,6 +67,21 @@ class Jenky
     last_build = (a.lastBuiltRevision for a in actions when a.lastBuiltRevision?)[0]
     last_build["SHA1"][0..6]
 
+  buildInfoPath = (build) ->
+    "#{URL}/job/#{@prefix}-#{build}/lastBuild/api/json"
+
+  triggerBuildPath = (build = null) ->
+    path = "#{URL}/job/#{@prefix}"
+    path += "-#{build}" if build
+    path += "/build"
+
+  jenkinsRequest = (path) ->
+    req = @msg.http(path)
+    if auth = authString()
+      req.headers Authorization: "Basic #{auth}"
+    req.header('Content-Length', 0)
+    req
+
   authString = ->
     if process.env.HUBOT_JENKINS_AUTH
       new Buffer(process.env.HUBOT_JENKINS_AUTH).toString('base64')
@@ -81,13 +101,6 @@ module.exports = (robot) ->
     else
       callback(config)
 
-  triggerBuild = (msg, build) ->
-    message = new Hubot.TextMessage(
-      msg.message.user,
-      "#{robot.name} jenkins build #{build}"
-    )
-    robot.receive message
-
   robot.respond /jenky status$/i, (msg) ->
     withJenkyConfig msg, (config) ->
       jenky = new Jenky config.prefix, config.name
@@ -98,23 +111,28 @@ module.exports = (robot) ->
     jenky.status(msg)
 
   robot.respond /jenky trigger (.*)$/i, (msg) ->
-    triggerBuild msg, msg.match[1]
+    jenky = new Jenky msg.match[1]
+    jenky.trigger(msg)
 
   robot.respond /jenky build$/i, (msg) ->
     withJenkyConfig msg, (config) ->
-      triggerBuild msg, "#{config.prefix}-master"
+      jenky = new Jenky config.prefix, config.name
+      jenky.trigger(msg, 'master')
 
   robot.respond /jenky package$/i, (msg) ->
     withJenkyConfig msg, (config) ->
-      triggerBuild msg, "#{config.prefix}-package"
+      jenky = new Jenky config.prefix, config.name
+      jenky.trigger(msg, 'package')
 
   robot.respond /jenky stage$/i, (msg) ->
     withJenkyConfig msg, (config) ->
-      triggerBuild msg, "#{config.prefix}-staging"
+      jenky = new Jenky config.prefix, config.name
+      jenky.trigger(msg, 'staging')
 
   robot.respond /jenky deploy$/i, (msg) ->
     withJenkyConfig msg, (config) ->
-      triggerBuild msg, "#{config.prefix}-production"
+      jenky = new Jenky config.prefix, config.name
+      jenky.trigger(msg, 'production')
 
   robot.respond /jenky config$/i, (msg) ->
     withJenkyConfig msg, (config) ->
