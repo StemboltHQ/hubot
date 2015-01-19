@@ -31,7 +31,7 @@ class Jenky
     path = triggerBuildPath.call(@, build)
     req = jenkinsRequest.call(@, path)
     req.post() (err, res, body) =>
-      build_message = if build_message then "*#{build_message}* " else ""
+      build_message = if build then "*#{build}* " else ""
       if res.statusCode is 201
         @msg.reply "#{build_message}build started for #{@name}"
       else
