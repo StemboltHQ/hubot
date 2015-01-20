@@ -1,7 +1,6 @@
 [
   "hubot-auth",
   "hubot-calculator",
-  "hubot-karma-classic",
   "hubot-google-hangouts",
   "hubot-google-images",
   "hubot-google-translate",
