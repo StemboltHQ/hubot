@@ -26,6 +26,7 @@
     "hubot-calculator": "^0.4.0",
     "hubot-google-hangouts": "^0.7.1",
     "hubot-google-translate": "^0.1.0",
+    "hubot-help": "^0.1.1",
     "hubot-karma-classic": "^1.0.1",
     "hubot-pager-me": "^2.0.2",
     "hubot-scripts": ">= 2.5.16",
