@@ -23,6 +23,7 @@
     "cheerio": "0.18.0",
     "moment": "2.8.4",
     "hubot": ">= 2.11.0",
+    "hubot-auth": "^1.1.2",
     "hubot-calculator": "^0.4.0",
     "hubot-google-hangouts": "^0.7.1",
     "hubot-google-images": "^0.1.2",
