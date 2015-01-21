@@ -1,16 +1,23 @@
 # Description:
 #   Lovely Jenkins integration for Hubot.
 #
+# Dependencies:
+#   "moment": "2.8.4"
+#
+# Configuration:
+#   HUBOT_JENKINS_URL: Jenkins base URL.
+#   HUBOT_JENKINS_AUTH: Optional authentication information for private Jenkins jobs.
+#
 # Commands:
-#   hubot jenky build - trigger configured master build on Jenkins
-#   hubot jenky config - print the current channel config
-#   hubot jenky config <prefix> <name> - add default prefix and possibly a name for a channel
-#   hubot jenky deploy - trigger configured production build on Jenkins
-#   hubot jenky package - trigger configured package build on Jenkins
-#   hubot jenky stage - trigger configured staging build on Jenkins
-#   hubot jenky status - show build pipeline status based on config
-#   hubot jenky status <prefix> - show build pipeline status for the provided prefix
-#   hubot jenky trigger <build> - trigger build on Jenkins
+#   hubot jenky build - Trigger configured master build on Jenkins.
+#   hubot jenky config - Print the current channel config.
+#   hubot jenky config <prefix> <name> - Add default prefix and possibly a name for a channel.
+#   hubot jenky deploy - Trigger configured production build on Jenkins.
+#   hubot jenky package - Trigger configured package build on Jenkins.
+#   hubot jenky stage - Trigger configured staging build on Jenkins.
+#   hubot jenky status - Show build pipeline status based on config.
+#   hubot jenky status <prefix> - Show build pipeline status for the provided prefix.
+#   hubot jenky trigger <build> - Trigger build on Jenkins.
 
 Moment = require('moment')
 
