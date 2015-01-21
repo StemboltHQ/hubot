@@ -1,1 +1,7 @@
-["file-brain.coffee", "ruby.coffee", "time.coffee", "remind.coffee", "polite.coffee"]
+[
+  "file-brain.coffee",
+  "ruby.coffee",
+  "time.coffee",
+  "remind.coffee",
+  "polite.coffee"
+]
