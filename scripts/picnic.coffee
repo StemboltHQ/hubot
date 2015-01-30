@@ -7,6 +7,8 @@
 api_key = process.env.HUBOT_TUMBLR_API_KEY
 url = "http://api.tumblr.com/v2/blog/picniccoffee.tumblr.com/posts/text?api_key=#{api_key}"
 
+Cheerio = require("cheerio")
+
 module.exports = (robot) ->
   robot.respond /picnic/i, (msg) ->
     msg.http(url).get() (err, res, body) ->
@@ -14,17 +16,19 @@ module.exports = (robot) ->
       post = data.response.posts[0]
       response = post.title + "\n"
 
-      text = post.body
-      text = text.replace(/<\/?p>/g, "")
-      text = text.replace(/&amp;/g, "&")
+      $ = Cheerio.load("<root>#{post.body}</root>")
 
-      items = text.split(/<strong>/)
+      $('strong').each ->
+        $(this).replaceWith("*#{$(this).text()}*")
+      $('br').replaceWith("\n")
+      $('p').each ->
+        $(this).replaceWith("\n\n#{$(this).html()}\n\n")
+
+      console.log($('root').text().trim())
+
+      items = $('root').text().trim().split(/\n\n+/)
       for item in items
-        continue if !item
-        [title, info] = item.split('</strong>')
-        continue if !info
-        info = info.replace(/<br\/?>/g, '').trim()
-        response += "*#{title}* - #{info}" + "\n"
+        response += item.trim().split(/\n+/).join(" - ") + "\n"
 
       msg.send(response)
 
