@@ -14,9 +14,13 @@ module.exports = (robot) ->
     msg.http(url).get() (err, res, body) ->
       data = JSON.parse(body)
       post = data.response.posts[0]
-      response = post.title + "\n"
 
-      $ = Cheerio.load("<root>#{post.body}</root>")
+      response = ""
+
+      if post.title
+        response += post.title + "\n"
+
+      $ = Cheerio.load("<root>#{post.body || post.caption}</root>")
 
       $('strong').each ->
         $(this).replaceWith("*#{$(this).text()}*")
