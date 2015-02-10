@@ -5,7 +5,7 @@
 #   hubot picnic - Get today's picnic menu
 
 api_key = process.env.HUBOT_TUMBLR_API_KEY
-url = "http://api.tumblr.com/v2/blog/picniccoffee.tumblr.com/posts/text?api_key=#{api_key}"
+url = "http://api.tumblr.com/v2/blog/picniccoffee.tumblr.com/posts/?api_key=#{api_key}"
 
 Cheerio = require("cheerio")
 
