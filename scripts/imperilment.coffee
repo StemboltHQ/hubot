@@ -1,6 +1,9 @@
 # Description:
 #   Imperilment notifications via webhook
 #
+# Dependencies:
+#   'lodash': '^3.6.0'
+#
 # Configuration:
 #   1. Create a new webhook at:
 #      http://<IMPERILMENT_URL>.com/web_hooks/new
@@ -8,13 +11,17 @@
 #   2. Add the url: <HUBOT_URL>:<PORT>/hubot/imperilment/<room>
 #
 # Commands:
-#   None
+#   hubot who's not in                                         return a list of users with unanswered clues
 #
 # URLS:
 #   POST /hubot/imperilment/<room>
 #
 # Events:
 #   - new answer created
+
+_ = require('lodash')
+
+leaderboard_url = "http://imperilment.freerunningtech.com/leader_board"
 
 eventActions =
   answer:
@@ -48,3 +55,22 @@ module.exports = (robot) ->
     catch err
       robot.emit 'error', err
       res.status(500).send({ error: err })
+
+  robot.respond /who('s|s| is|se)? not in/i, (msg) ->
+    msg.http("#{leaderboard_url}.json").get() (err, res, body) ->
+      game_results = JSON.parse(body)
+      waiting_on = _.chain(game_results).select (game_result) ->
+        _.includes(game_result.results, 'unanswered')
+      .pluck('user')
+      .pluck('email')
+      .value()
+      if _.isEmpty(waiting_on)
+        response = """
+          Everyone is already in!
+          See for yourself #{leaderboard_url}
+          """
+      else
+        response = """
+          We're still missing responses from #{waiting_on.join(' ')}
+          """
+      msg.send(response)
