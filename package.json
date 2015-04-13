@@ -34,6 +34,7 @@
     "hubot-slack": "slackhq/hubot-slack",
     "hubot-untappd": "0.0.1",
     "hubot-youtube": "^0.1.2",
+    "lodash": "^3.6.0",
     "moment": "2.8.4"
   },
   "engines": {
