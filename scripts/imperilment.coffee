@@ -12,6 +12,7 @@
 #
 # Commands:
 #   hubot who's not in                                         return a list of users with unanswered clues
+#   hubot imperilment me as <email>                            remember your imperilment email is <email>
 #
 # URLS:
 #   POST /hubot/imperilment/<room>
@@ -42,6 +43,15 @@ announceEvent = (eventType, action, data, cb) ->
     cb "Received a #{action} #{eventType} from Imperilment."
 
 module.exports = (robot) ->
+
+  usernameFromEmail = (email) ->
+    user = _.find robot.brain.users(), (user) ->
+      user.imperilmentEmail == email
+    if user
+      user.name
+    else
+      email
+
   robot.router.post '/hubot/imperilment/:room', (req, res) ->
     room = req.params.room
     eventType = req.headers['x-imperilment-event']
@@ -56,6 +66,11 @@ module.exports = (robot) ->
       robot.emit 'error', err
       res.status(500).send({ error: err })
 
+  robot.respond /imperilment(?: me)? as (.*)$/i, (msg) ->
+    email = msg.match[1]
+    msg.message.user.imperilmentEmail = email
+    msg.send "Okay, I'll remember your Imperilment email is #{email}"
+
   robot.respond /who('s|s| is|se)? not in/i, (msg) ->
     msg.http("#{leaderboard_url}.json").get() (err, res, body) ->
       game_results = JSON.parse(body)
@@ -63,6 +78,7 @@ module.exports = (robot) ->
         _.includes(game_result.results, 'unanswered')
       .pluck('user')
       .pluck('email')
+      .map(usernameFromEmail)
       .value()
       if _.isEmpty(waiting_on)
         response = """
