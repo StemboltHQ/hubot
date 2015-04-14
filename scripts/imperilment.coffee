@@ -47,10 +47,7 @@ module.exports = (robot) ->
   usernameFromEmail = (email) ->
     user = _.find robot.brain.users(), (user) ->
       user.imperilmentEmail == email
-    if user
-      user.name
-    else
-      email
+    if user then user.name else null
 
   robot.router.post '/hubot/imperilment/:room', (req, res) ->
     room = req.params.room
@@ -79,6 +76,7 @@ module.exports = (robot) ->
       .pluck('user')
       .pluck('email')
       .map(usernameFromEmail)
+      .compact()
       .value()
       if _.isEmpty(waiting_on)
         response = """
@@ -87,6 +85,6 @@ module.exports = (robot) ->
           """
       else
         response = """
-          We're still missing responses from #{waiting_on.join(' ')}
+          We're still missing responses from #{waiting_on.join(', ')}
           """
       msg.send(response)
