@@ -51,8 +51,8 @@ module.exports = (robot) ->
 
   robot.router.post '/hubot/imperilment/:room', (req, res) ->
     room = req.params.room
-    eventType = req.headers['x-imperilment-event']
     data = req.body
+    eventType = data.type
     action = data.action
 
     try
