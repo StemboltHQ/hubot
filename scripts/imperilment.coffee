@@ -23,24 +23,37 @@
 _ = require('lodash')
 
 leaderboard_url = "http://imperilment.freerunningtech.com/leader_board"
+imperilment_color = '#229'
+isMonday = ->
+  new Date().getDay() == 1
 
-eventActions =
-  answer:
-    new: (data, callback) ->
-      answer = data.answer
-      callback """
-      New Imperilment clue!
-      > *#{answer.category.name}* for *$#{answer.amount}*
-      >
-      > #{answer.answer}
-      #{answer.url}
-      """
+# So we can pass object-like classes to hubot's api
+Function::getter = (prop, get) ->
+  Object.defineProperty @prototype, prop, {get, configurable: yes}
 
-announceEvent = (eventType, action, data, cb) ->
-  if eventActions[eventType]?[action]?
-    eventActions[eventType][action](data, cb)
-  else
-    cb "Received a #{action} #{eventType} from Imperilment."
+class Message
+  @getter 'color', -> imperilment_color
+  @getter 'fallback', ->
+    """
+    #{@pretext}
+    > *#{@title}*
+    > #{@text}
+    > #{@title_link}
+    """
+
+class NewAnswerMessage extends Message
+  constructor: (data) ->
+    @answer = data.answer
+  @getter 'pretext',    -> 'New Imperilment clue!'
+  @getter 'title',      -> "#{@answer.category.name} for $#{@answer.amount}"
+  @getter 'title_link', -> "#{@answer.url}"
+  @getter 'text',       -> "#{@answer.answer}"
+
+class AllInMessage extends Message
+  @getter 'pretext',    -> 'Time to reveal Imperilment!'
+  @getter 'title',      -> 'Leaderboard'
+  @getter 'title_link', -> "#{leaderboard_url}"
+  @getter 'text',       -> 'Everyone who has registered their email is in.'
 
 module.exports = (robot) ->
 
@@ -49,17 +62,50 @@ module.exports = (robot) ->
       user.imperilmentEmail == email
     if user then user.name else null
 
+  getPendingUsers = (cb) ->
+    robot.http("#{leaderboard_url}.json").get() (err, res, body) ->
+      game_results = JSON.parse(body)
+      waiting_on = _.chain(game_results)
+        .select (game_result) ->
+          _.includes(game_result.results, 'unanswered')
+        .pluck('user')
+        .pluck('email')
+        .map(usernameFromEmail)
+        .compact()
+        .value()
+      cb(waiting_on)
+
+  eventActions =
+    answer:
+      new: (room, data) ->
+        robot.emit 'slack-attachment',
+          channel: room
+          content: new NewAnswerMessage(data)
+
+    question:
+      new: (room, data) ->
+        return if isMonday()
+        everyoneIsIn = ->
+          robot.brain.set('everyoneIsIn', true)
+          robot.emit 'slack-attachment',
+            channel: room
+            content: new AllInMessage
+        getPendingUsers (waiting_on) ->
+          if _.isEmpty(waiting_on)
+            everyoneIsIn() unless robot.brain.get('everyoneIsIn')
+          else
+            robot.brain.set('everyoneIsIn', false)
+
   robot.router.post '/hubot/imperilment/:room', (req, res) ->
     room = req.params.room
     data = req.body
     eventType = data.type
     action = data.action
-
     try
-      announceEvent eventType, action, data, (say) ->
-        robot.messageRoom room, say
+      eventActions[eventType][action](room, data)
       res.send({ message: 'success' })
     catch err
+      robot.messageRoom(room, "Received a #{action} #{eventType} from Imperilment.")
       robot.emit 'error', err
       res.status(500).send({ error: err })
 
@@ -69,15 +115,7 @@ module.exports = (robot) ->
     msg.send "Okay, I'll remember your Imperilment email is #{email}"
 
   robot.respond /who('s|s| is|se)? not in/i, (msg) ->
-    msg.http("#{leaderboard_url}.json").get() (err, res, body) ->
-      game_results = JSON.parse(body)
-      waiting_on = _.chain(game_results).select (game_result) ->
-        _.includes(game_result.results, 'unanswered')
-      .pluck('user')
-      .pluck('email')
-      .map(usernameFromEmail)
-      .compact()
-      .value()
+    getPendingUsers (waiting_on) ->
       if _.isEmpty(waiting_on)
         response = """
           Everyone is already in!
