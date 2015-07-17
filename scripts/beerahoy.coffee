@@ -10,13 +10,13 @@
 #
 # URLS:
 
-BASE_URL = "https://beerahoy.herokuapp.com/requests"
+BASE_URL = "https://beerahoy.herokuapp.com/orders"
 
 module.exports = (robot) ->
 
   robot.respond /beer(?: me)( some)? (\S.*)$/i, (msg) ->
     request_data = JSON.stringify({
-      beer_brand: "#{msg.match[2]}"
+      beer_id: "#{msg.match[2]}"
       employee: "#{msg.message.user.name}",
       format: 'json'
     })
@@ -37,12 +37,12 @@ module.exports = (robot) ->
        data = JSON.parse(body)
 
        requests = data.map (beer) ->
-         return beer.beer_brand
+         return beer
 
        msg.send "Beers that have been requested: #{requests.join(', ')} #{BASE_URL}"
 
   robot.respond /clear( all)? beer\s?orders/i, (msg) ->
-    robot.http("#{BASE_URL}/delete_all").get() (err, res, body) ->
+    robot.http("#{BASE_URL}/delete_all").delete() (err, res, body) ->
        if res.statusCode isnt 302
          msg.send body
          return
