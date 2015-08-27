@@ -1,24 +1,30 @@
 # Description:
-#     Beers requests via slack
+#   Beers requests via slack
+#
+# Dependencies:
+#   None
 #
 # Configuration:
+#   Beerahoy orders url:
+#   BASE_URL= "https://beerahoy.herokuapp.com/orders"
 #
 # Commands:
-#   hubot beer me some <beer>        create a request for <beer>
-#   hubot what's( on) the beermenu   return a list of currently requested beers
-#   hubot clear( all) beer orders    delete all beer requests
+#   hubot beer me (some) <beer>      create a request for <beer>
+#   hubot beer orders                return a list of currently requested beers
+#   hubot beer clear( orders)        delete all beer requests
 #
-# URLS:
+# Author:
+#   DariaSova
 
 BASE_URL = "https://beerahoy.herokuapp.com/orders"
 
 module.exports = (robot) ->
 
-  robot.respond /beer(?: me)( some)? (\S.*)$/i, (msg) ->
+  robot.respond /beer(\s?me)( some)? (\S.*)$/i, (msg) ->
     request_data = JSON.stringify({
-      beer_id: "#{msg.match[2]}"
+      beer_id: "#{msg.match[3]}"
       employee: "#{msg.message.user.name}",
-      format: 'json'
+      format: "json"
     })
 
     msg.http("#{BASE_URL}")
@@ -29,7 +35,7 @@ module.exports = (robot) ->
           return
         msg.reply "got your order!"
 
-  robot.respond /what('s|s|)( on)? the( friday)?( beer\s?menu)/i, (msg) ->
+  robot.respond /beer\s?orders/i, (msg) ->
     robot.http("#{BASE_URL}.json").get() (err, res, body) ->
        if res.statusCode isnt 200
          msg.send body
@@ -41,7 +47,7 @@ module.exports = (robot) ->
 
        msg.send "Beers that have been requested: #{requests.join(', ')} #{BASE_URL}"
 
-  robot.respond /clear( all)? beer\s?orders/i, (msg) ->
+  robot.respond /beer clear( orders)?/i, (msg) ->
     robot.http("#{BASE_URL}/delete_all").delete() (err, res, body) ->
        if res.statusCode isnt 302
          msg.send body
