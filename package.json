@@ -32,7 +32,7 @@
     "hubot-pager-me": "^2.0.2",
     "hubot-rules": "^0.1.0",
     "hubot-scripts": ">= 2.5.16",
-    "hubot-slack": "slackhq/hubot-slack",
+    "hubot-slack": "jhawthorn/hubot-slack",
     "hubot-untappd": "freerunningtech/hubot-untappd",
     "hubot-youtube": "^0.1.2",
     "lodash": "^3.6.0",
