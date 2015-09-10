@@ -24,14 +24,17 @@ module.exports = (robot) ->
   try
     robot.logger.info "loading brain from #{brainPath}"
     data = fs.readFileSync brainPath, 'utf-8'
+    console.log("Read #{data.length} bytes")
     if data
       robot.brain.mergeData JSON.parse(data)
   catch error
-      console.log('Unable to read file', error) unless error.code is 'ENOENT'
+      console.log('Unable to read file', error)
 
   robot.brain.on 'save', (data) ->
     robot.logger.info "saving brain to #{brainPathTmp}"
-    fs.writeFileSync brainPathTmp, JSON.stringify(data), 'utf-8'
+    json = JSON.stringify(data)
+    robot.logger.info "writing #{json.length} bytes"
+    fs.writeFileSync brainPathTmp, json, 'utf-8'
     robot.logger.info "moving to #{brainPath}"
     fs.renameSync(brainPathTmp, brainPath)
     robot.logger.info "save complete"
