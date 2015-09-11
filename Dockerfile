@@ -1,4 +1,4 @@
-FROM node
+FROM node:4.0.0
 
 ADD . /hubot
 WORKDIR /hubot
