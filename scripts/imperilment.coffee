@@ -114,6 +114,10 @@ module.exports = (robot) ->
     msg.message.user.imperilmentEmail = email
     msg.send "Okay, I'll remember your Imperilment email is #{email}"
 
+  robot.respond /forget( me| my)? imperilment$/i, (msg) ->
+    delete msg.message.user.imperilmentEmail
+    msg.send "Okay, I'll no longer nag you about imperilment"
+
   robot.respond /who('s|s| is|se)? not in/i, (msg) ->
     getPendingUsers (waiting_on) ->
       if _.isEmpty(waiting_on)
