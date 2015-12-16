@@ -25,6 +25,7 @@ _ = require('lodash')
 leaderboard_url = "http://imperilment.freerunningtech.com/leader_board"
 imperilment_color = '#229'
 channelSpamDelay = 15 * 60 * 1000
+firstAskDelay = 30 * 60 * 1000
 isMonday = ->
   new Date().getDay() == 1
 
@@ -61,6 +62,10 @@ module.exports = (robot) ->
     lastAsked = robot.brain.get('lastAskedWhoIsIn') || new Date
     new Date - lastAsked < channelSpamDelay
 
+  tooSoon = ->
+    created_at = robot.brain.get('lastQuestionCreatedAt') || new Date(0)
+    new Date - created_at < firstAskDelay
+
   usernameFromEmail = (email) ->
     user = _.find robot.brain.users(), (user) ->
       user.imperilmentEmail == email
@@ -82,6 +87,7 @@ module.exports = (robot) ->
   eventActions =
     answer:
       new: (room, data) ->
+        robot.brain.set('lastQuestionCreatedAt', new Date)
         robot.emit 'slack-attachment',
           channel: room
           content: new NewAnswerMessage(data)
@@ -133,6 +139,9 @@ module.exports = (robot) ->
         response = """
           We're still missing responses from #{waiting_on.join(', ')}
           """
+      if tooSoon()
+        msg.reply('Give them a chance to answer!')
+        return msg.reply(response)
       if tooOften()
         msg.reply('Easy on the channel spam!')
         return msg.reply(response)
