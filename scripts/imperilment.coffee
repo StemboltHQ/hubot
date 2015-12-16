@@ -24,6 +24,7 @@ _ = require('lodash')
 
 leaderboard_url = "http://imperilment.freerunningtech.com/leader_board"
 imperilment_color = '#229'
+channelSpamDelay = 15 * 60 * 1000
 isMonday = ->
   new Date().getDay() == 1
 
@@ -56,6 +57,9 @@ class AllInMessage extends Message
   @getter 'text',       -> 'Everyone who has registered their email is in.'
 
 module.exports = (robot) ->
+  tooOften = ->
+    lastAsked = robot.brain.get('lastAskedWhoIsIn') || new Date
+    new Date - lastAsked < channelSpamDelay
 
   usernameFromEmail = (email) ->
     user = _.find robot.brain.users(), (user) ->
@@ -129,4 +133,8 @@ module.exports = (robot) ->
         response = """
           We're still missing responses from #{waiting_on.join(', ')}
           """
+      if tooOften()
+        msg.reply('Easy on the channel spam!')
+        return msg.reply(response)
+      robot.brain.set('lastAskedWhoIsIn', new Date)
       msg.send(response)
