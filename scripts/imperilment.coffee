@@ -58,6 +58,9 @@ class AllInMessage extends Message
   @getter 'text',       -> 'Everyone who has registered their email is in.'
 
 module.exports = (robot) ->
+  isDM = (msg) ->
+    msg.message.room == msg.message.user.name
+
   tooOften = ->
     lastAsked = robot.brain.get('lastAskedWhoIsIn') || new Date
     new Date - lastAsked < channelSpamDelay
@@ -139,6 +142,8 @@ module.exports = (robot) ->
         response = """
           We're still missing responses from #{waiting_on.join(', ')}
           """
+      if isDM(msg)
+        return robot.send { room: msg.message.user.name }, response
       if tooSoon()
         msg.reply('Give them a chance to answer!')
         return msg.reply(response)
