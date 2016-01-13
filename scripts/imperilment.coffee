@@ -59,7 +59,7 @@ class AllInMessage extends Message
 
 module.exports = (robot) ->
   tooOften = ->
-    lastAsked = robot.brain.get('lastAskedWhoIsIn') || new Date
+    lastAsked = robot.brain.get('lastAskedWhoIsIn') || new Date(0)
     new Date - lastAsked < channelSpamDelay
 
   tooSoon = ->
