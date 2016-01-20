@@ -143,12 +143,12 @@ module.exports = (robot) ->
           We're still missing responses from #{waiting_on.join(', ')}
           """
       if isDM(msg)
-        return robot.send { room: msg.message.user.name }, response
+        return robot.send({room: msg.message.user.name }, response)
       if tooSoon()
         msg.reply('Give them a chance to answer!')
-        return msg.reply(response)
+        return robot.send({room: msg.message.user.name }, response)
       if tooOften()
         msg.reply('Easy on the channel spam!')
-        return msg.reply(response)
+        return robot.send({room: msg.message.user.name }, response)
       robot.brain.set('lastAskedWhoIsIn', new Date)
       msg.send(response)
