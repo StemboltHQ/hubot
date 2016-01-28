@@ -25,7 +25,6 @@ _ = require('lodash')
 leaderboard_url = "http://imperilment.freerunningtech.com/leader_board"
 imperilment_color = '#229'
 channelSpamDelay = 15 * 60 * 1000
-firstAskDelay = 30 * 60 * 1000
 isMonday = ->
   new Date().getDay() == 1
 
@@ -61,13 +60,14 @@ module.exports = (robot) ->
   isDM = (msg) ->
     msg.message.room == msg.message.user.name
 
+  tooManyOut = (waiting_on) ->
+    created_at = robot.brain.get('lastQuestionCreatedAt') || new Date(0)
+    hours_since = (new Date - created_at) / 3600
+    waiting_on.length > 2 ^ hours_since
+
   tooOften = ->
     lastAsked = robot.brain.get('lastAskedWhoIsIn') || new Date(0)
     new Date - lastAsked < channelSpamDelay
-
-  tooSoon = ->
-    created_at = robot.brain.get('lastQuestionCreatedAt') || new Date(0)
-    new Date - created_at < firstAskDelay
 
   usernameFromEmail = (email) ->
     user = _.find robot.brain.users(), (user) ->
@@ -145,9 +145,9 @@ module.exports = (robot) ->
           We're still missing responses from #{waiting_on.join(', ')}
           """
       if isDM(msg)
-        return robot.send({room: msg.message.user.name }, response)
-      if tooSoon()
-        msg.reply('Give them a chance to answer!')
+        return robot.send { room: msg.message.user.name }, response
+      if tooManyOut(waiting_on)
+        msg.reply("We're still waiting on #{waiting_on.length} people, let's give them a minute.")
         return robot.send({room: msg.message.user.name }, response)
       if tooOften()
         msg.reply('Easy on the channel spam!')
