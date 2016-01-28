@@ -132,6 +132,9 @@ module.exports = (robot) ->
     msg.send "Okay, I'll no longer nag you about imperilment"
 
   robot.respond /who('s|s| is|se)? not in/i, (msg) ->
+    if(msg.message.user.name is 'senjai') {
+      return robot.send({room: msg.message.user.name }, "I'm sorry, I can't do that Richard.")
+    }
     getPendingUsers (waiting_on) ->
       if _.isEmpty(waiting_on)
         response = """
