@@ -6,11 +6,23 @@
 
 Cheerio = require("cheerio")
 
-url = "https://phillipsbeer.com/growlers/"
+phillips = (msg) ->
+  url = "https://phillipsbeer.com/growlers/"
+  msg.http(url).get() (err, res, body) ->
+    $ = Cheerio.load(body)
+    fills = $('.beer-name').map(->$(@).text()).get().join("\n")
+    msg.send("*Phillips*:\n#{fills}")
+
+driftwood = (msg) ->
+  url = "https://driftwoodbeer.com/contact/"
+
+  msg.http(url).get() (err, res, body) ->
+    $ = Cheerio.load(body)
+    getName = () -> $(@).children().remove().end().text().trim()
+    fills = $(".growler-fill li:not(.note)").map(getName).get().join("\n")
+    msg.send("*Driftwood*:\n#{fills}")
 
 module.exports = (robot) ->
   robot.respond /growlers/i, (msg) ->
-    msg.http(url).get() (err, res, body) ->
-      $ = Cheerio.load(body)
-      response = $('.beer-name').map(->$(@).text()).get().join("\n")
-      msg.send(response)
+    phillips(msg)
+    driftwood(msg)
