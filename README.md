@@ -33,6 +33,20 @@ Checkout the [Hubot docs][hubot-docs] for more information.
 Take a look at the scripts in the `./scripts` folder for examples. Read up on what you can do with hubot in the
 [Scripting Guide][hubot-scripting].
 
+## Testing
 
+    npm test
+
+We use the [Mocha][mocha] framework for unit testing.
+
+    npm run test-unit
+
+To help writing our specs we use the [Hubot test helper][hubot-test-helper] and
+[CO][co] for async control flow.
+
+
+[co]: https://www.npmjs.com/package/co
 [hubot-docs]: https://hubot.github.com/docs/
 [hubot-scripting]: https://github.com/github/hubot/blob/master/docs/scripting.md
+[hubot-test-helper]: https://github.com/mtsmfm/hubot-test-helper
+[mocha]: http://mochajs.org/
