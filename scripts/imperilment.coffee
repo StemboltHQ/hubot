@@ -60,11 +60,6 @@ module.exports = (robot) ->
   isDM = (msg) ->
     msg.message.room == msg.message.user.name
 
-  tooManyOut = (waiting_on) ->
-    created_at = robot.brain.get('lastQuestionCreatedAt') || new Date(0)
-    hours_since = (new Date - created_at) / 3600
-    waiting_on.length > 2 ^ hours_since
-
   tooOften = ->
     lastAsked = robot.brain.get('lastAskedWhoIsIn') || new Date(0)
     new Date - lastAsked < channelSpamDelay
@@ -90,10 +85,11 @@ module.exports = (robot) ->
   eventActions =
     answer:
       new: (room, data) ->
-        robot.brain.set('lastQuestionCreatedAt', new Date)
-        robot.emit 'slack-attachment',
-          channel: room
-          content: new NewAnswerMessage(data)
+        if data.amount > 0
+          robot.brain.set('lastQuestionCreatedAt', new Date)
+          robot.emit 'slack-attachment',
+            channel: room
+            content: new NewAnswerMessage(data)
 
     question:
       new: (room, data) ->
@@ -146,9 +142,6 @@ module.exports = (robot) ->
           """
       if isDM(msg)
         return robot.send { room: msg.message.user.name }, response
-      if tooManyOut(waiting_on)
-        msg.reply("We're still waiting on #{waiting_on.length} people, let's give them a minute.")
-        return robot.send({room: msg.message.user.name }, response)
       if tooOften()
         msg.reply('Easy on the channel spam!')
         return robot.send({room: msg.message.user.name }, response)
