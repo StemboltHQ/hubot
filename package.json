@@ -19,6 +19,11 @@
     "type": "git",
     "url": "https://github.com/github/hubot.git"
   },
+  "scripts": {
+    "start": "bin/hubot",
+    "test": "npm run test-unit",
+    "test-unit": "mocha --compilers coffee:coffee-script/register test"
+  },
   "dependencies": {
     "cheerio": "0.18.0",
     "chrono-node": "^1.0.6",
@@ -41,5 +46,11 @@
   "engines": {
     "node": ">= 0.8.x",
     "npm": ">= 1.1.x"
+  },
+  "devDependencies": {
+    "co": "^4.6.0",
+    "coffee-script": "^1.11.0",
+    "hubot-test-helper": "^1.5.0",
+    "mocha": "^3.1.0"
   }
 }

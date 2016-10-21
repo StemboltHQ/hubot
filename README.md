@@ -2,11 +2,11 @@
 
 This is a version of GitHub's Campfire bot, hubot. He's pretty cool.
 
-### Testing Hubot Locally
+## Running Hubot Locally
 
-You can test your hubot by running the following.
+You can run your hubot by running the following.
 
-    % bin/hubot
+    % npm start
 
 You'll see some start up output about where your scripts come from and a
 prompt.
@@ -25,36 +25,28 @@ Then you can interact with hubot by typing `hubot help`.
     help - Displays all of the help commands that Hubot knows about.
     ...
 
+Checkout the [Hubot docs][hubot-docs] for more information.
 
-### Scripting
 
-Take a look at the scripts in the `./scripts` folder for examples.
-Delete any scripts you think are useless or boring.  Add whatever functionality you
-want hubot to have. Read up on what you can do with hubot in the [Scripting Guide](https://github.com/github/hubot/blob/master/docs/scripting.md).
+## Development
 
-## hubot-scripts
+Take a look at the scripts in the `./scripts` folder for examples. Read up on what you can do with hubot in the
+[Scripting Guide][hubot-scripting].
 
-There will inevitably be functionality that everyone will want. Instead
-of adding it to hubot itself, you can submit pull requests to
-[hubot-scripts][hubot-scripts].
+## Testing
 
-To enable scripts from the hubot-scripts package, add the script name with
-extension as a double quoted string to the `hubot-scripts.json` file in this
-repo.
+    npm test
 
-[hubot-scripts]: https://github.com/github/hubot-scripts
+We use the [Mocha][mocha] framework for unit testing.
 
-## external-scripts
+    npm run test-unit
 
-Tired of waiting for your script to be merged into `hubot-scripts`? Want to
-maintain the repository and package yourself? Then this added functionality
-maybe for you!
+To help writing our specs we use the [Hubot test helper][hubot-test-helper] and
+[CO][co] for async control flow.
 
-Hubot is now able to load scripts from third-party `npm` packages! To enable
-this functionality you can follow the following steps.
 
-1. Add the packages as dependencies into your `package.json`
-2. `npm install` to make sure those packages are installed
-
-To enable third-party scripts that you've added you will need to add the package
-name as a double quoted string to the `external-scripts.json` file in this repo.
+[co]: https://www.npmjs.com/package/co
+[hubot-docs]: https://hubot.github.com/docs/
+[hubot-scripting]: https://github.com/github/hubot/blob/master/docs/scripting.md
+[hubot-test-helper]: https://github.com/mtsmfm/hubot-test-helper
+[mocha]: http://mochajs.org/
