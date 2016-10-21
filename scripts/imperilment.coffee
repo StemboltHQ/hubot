@@ -32,30 +32,6 @@ isMonday = ->
 Function::getter = (prop, get) ->
   Object.defineProperty @prototype, prop, {get, configurable: yes}
 
-class Message
-  @getter 'color', -> imperilment_color
-  @getter 'fallback', ->
-    """
-    #{@pretext}
-    > *#{@title}*
-    > #{@text}
-    > #{@title_link}
-    """
-
-class NewAnswerMessage extends Message
-  constructor: (data) ->
-    @answer = data.answer
-  @getter 'pretext',    -> 'New Imperilment clue!'
-  @getter 'title',      -> "#{@answer.category.name} for $#{@answer.amount}"
-  @getter 'title_link', -> "#{@answer.url}"
-  @getter 'text',       -> "#{@answer.answer}"
-
-class AllInMessage extends Message
-  @getter 'pretext',    -> 'Time to reveal Imperilment!'
-  @getter 'title',      -> 'Leaderboard'
-  @getter 'title_link', -> "#{leaderboard_url}"
-  @getter 'text',       -> 'Everyone who has registered their email is in.'
-
 module.exports = (robot) ->
   isDM = (msg) ->
     msg.message.room == msg.message.user.name
@@ -81,42 +57,6 @@ module.exports = (robot) ->
         .compact()
         .value()
       cb(waiting_on)
-
-  eventActions =
-    answer:
-      new: (room, data) ->
-        if data.amount > 0
-          robot.brain.set('lastQuestionCreatedAt', new Date)
-          robot.emit 'slack-attachment',
-            channel: room
-            content: new NewAnswerMessage(data)
-
-    question:
-      new: (room, data) ->
-        return if isMonday()
-        everyoneIsIn = ->
-          robot.brain.set('everyoneIsIn', true)
-          robot.emit 'slack-attachment',
-            channel: room
-            content: new AllInMessage
-        getPendingUsers (waiting_on) ->
-          if _.isEmpty(waiting_on)
-            everyoneIsIn() unless robot.brain.get('everyoneIsIn')
-          else
-            robot.brain.set('everyoneIsIn', false)
-
-  robot.router.post '/hubot/imperilment/:room', (req, res) ->
-    room = req.params.room
-    data = req.body
-    eventType = data.type
-    action = data.action
-    try
-      eventActions[eventType][action](room, data)
-      res.send({ message: 'success' })
-    catch err
-      robot.messageRoom(room, "Received a #{action} #{eventType} from Imperilment.")
-      robot.emit 'error', err
-      res.status(500).send({ error: err })
 
   robot.respond /imperilment(?: me)? as (.*)$/i, (msg) ->
     email = msg.match[1]
